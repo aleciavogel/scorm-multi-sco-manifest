@@ -374,23 +374,43 @@ const createManifest = (docu) => {
   console.log(`Created: imsmanifest.xml`);
 };
 
+function copyFolderSync(from, to) {
+  if (!fs.existsSync(to)) fs.mkdirSync(to);
+  fs.readdirSync(from).forEach((element) => {
+    if (fs.lstatSync(join(from, element)).isFile()) {
+      fs.copyFileSync(join(from, element), join(to, element));
+    } else {
+      copyFolderSync(join(from, element), join(to, element));
+    }
+  });
+}
+
 const zipBuild = async () => {
   archiveDirPath = config.archiveDir.split("/");
   archiveDirPath.pop();
   archiveDirPath = archiveDirPath.join("/");
 
   if (!fs.existsSync(archiveDirPath)) fs.mkdirSync(archiveDirPath);
+  if (!fs.existsSync("temp")) fs.mkdirSync("temp");
+
+  copyFolderSync(
+    config.manifestOptions.SCOs[0].buildDirName,
+    `temp/${config.manifestOptions.SCOs[0].buildDirName}`,
+  );
 
   try {
     console.log("Creating zip file...");
     const zip = new AdmZip();
+
     const outputFile = config.archiveDir;
-    zip.addLocalFolder("./build");
-    zip.addFile("imsmanifest.xml", fs.readFileSync(`${config.buildsDir}/imsmanifest.xml`));
+    zip.addLocalFolder("temp");
+    zip.addLocalFile("imsmanifest.xml");
     zip.writeZip(outputFile);
     console.log(`Created ${outputFile} successfully`);
+    fs.rmSync("temp", { recursive: true, force: true });
   } catch (e) {
     console.log(`Something went wrong. ${e}`);
+    fs.rmSync("temp", { recursive: true, force: true });
   }
 };
 
