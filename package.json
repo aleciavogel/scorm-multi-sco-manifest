@@ -23,6 +23,7 @@
   "author": "Jesse Hyde",
   "license": "MIT",
   "dependencies": {
+    "adm-zip": "^0.5.10",
     "xmlbuilder2": "^3.0.2",
     "zip-a-folder": "^1.1.5"
   },

@@ -1,8 +1,8 @@
 const { create } = require("xmlbuilder2");
 const fs = require("fs");
-const { zip } = require("zip-a-folder");
 const { promisify } = require("util");
-const { resolve, relative } = require("path");
+const { resolve, relative, join } = require("path");
+const AdmZip = require("adm-zip");
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
 
@@ -381,8 +381,17 @@ const zipBuild = async () => {
 
   if (!fs.existsSync(archiveDirPath)) fs.mkdirSync(archiveDirPath);
 
-  await zip(`${config.buildsDir}/`, config.archiveDir);
-  console.log(`Zipped: ${config.archiveDir}`);
+  try {
+    console.log("Creating zip file...");
+    const zip = new AdmZip();
+    const outputFile = join(archiveDirPath, config.archiveDir);
+    zip.addLocalFolder("./build");
+    zip.addFile("imsmanifest.xml", fs.readFileSync(`${config.buildsDir}/imsmanifest.xml`));
+    zip.writeZip(outputFile);
+    console.log(`Created ${outputFile} successfully`);
+  } catch (e) {
+    console.log(`Something went wrong. ${e}`);
+  }
 };
 
 (async () => {
