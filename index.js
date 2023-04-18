@@ -384,7 +384,7 @@ const zipBuild = async () => {
   try {
     console.log("Creating zip file...");
     const zip = new AdmZip();
-    const outputFile = join(archiveDirPath, config.archiveDir);
+    const outputFile = config.archiveDir;
     zip.addLocalFolder("./build");
     zip.addFile("imsmanifest.xml", fs.readFileSync(`${config.buildsDir}/imsmanifest.xml`));
     zip.writeZip(outputFile);
